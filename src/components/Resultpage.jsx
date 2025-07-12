@@ -24,6 +24,7 @@ export default function ResultPage() {
   const [loadingAttemptedQuiz, setLoadingAttemptedQuiz] = useState(true);
 
   const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://3.110.46.79:5000").replace(/\/$/, '');
+  const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "https://3.110.46.79:5000").replace(/\/$/, '');
 
   // Helper functions
   const calculateAccuracy = (score, totalQuestions = 5) => {

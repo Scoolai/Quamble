@@ -25,7 +25,7 @@ const QuizCard = () => {
     const { getAuthToken, isAuthenticated } = useAuth()
 
     // Fix: Remove trailing slash to prevent double slashes
-    const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://3.110.46.79:5000").replace(/\/$/, '')
+    const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "https://3.110.46.79:5000").replace(/\/$/, '')
 
     // Extract query parameters
     const queryParams = new URLSearchParams(location.search)
