@@ -3,7 +3,7 @@ import React, { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 
 // Fix: Handle API URL properly
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "https://3.110.46.79:5000/")
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "https://3.110.46.79:5000").replace(/\/$/, '')
 
 export default function Login() {
     const navigate = useNavigate()
