@@ -1,0 +1,131 @@
+/* Box container */
+.box-container {
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     height: 100vh;
+     width: 100%;
+     background-color: #f7f7f7;
+   }
+
+   .form h1 {
+     text-align: center;
+     margin-bottom: 10px;
+   }
+   
+   /* Form container */
+   .form-container {
+     background-color: white;
+     padding: 20px;
+     border-radius: 10px;
+     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+     width: 300px;
+   }
+   
+   /* Toggle button styles */
+   .form-toggle {
+     display: flex;
+     justify-content: space-between;
+     margin-bottom: 20px;
+   }
+   
+   .form-toggle button {
+     width: 50%;
+     padding: 10px;
+     background-color: #f3f3f3;
+     border: none;
+     cursor: pointer;
+     font-size: 16px;
+     border-radius: 10px 10px 0 0;
+   }
+   
+   .form-toggle .active {
+     background-color: #033452;
+     color: white;
+   }
+   
+   /* Form styles */
+   .form {
+     display: flex;
+     flex-direction: column;
+   }
+   
+   .form input {
+     padding: 10px;
+     margin-bottom: 10px;
+     border: 1px solid #ddd;
+     border-radius: 5px;
+   }
+   
+   .submit-btn {
+     padding: 10px;
+     background-color: #033452;
+     color: white;
+     border: none;
+     border-radius: 5px;
+     cursor: pointer;
+   }
+   
+   /* Links */
+   .form a {
+     color: #007bff;
+     text-decoration: none;
+     margin-bottom: 10px;
+     text-align: right;
+   }
+   
+   .form p {
+     text-align: center;
+   }
+   
+   /* Divider for 'Or' */
+   .divider-container {
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     width: 100%;
+     margin: 20px 0; /* Adjust the spacing above and below the divider */
+   }
+   
+   .divider-line {
+     flex-grow: 1;
+     border: none;
+     border-top: 1px solid #ccc;
+     margin: 0 10px;
+   }
+   
+   .divider-text {
+     padding: 0 10px;
+     font-size: 1.2em;
+     color: #666;
+   }
+   
+   /* Social login buttons */
+   .social-login {
+     display: flex;
+     justify-content: space-around;
+     gap: 10px;
+   }
+   
+   .google-btn, .facebook-btn {
+     padding: 10px;
+     background-color: #db4437; /* Default Google button color */
+     color: white;
+     border: none;
+     border-radius: 30px;
+     font-size: 14px;
+     cursor: pointer;
+   }
+
+   .submit-btn {
+     border-radius: 30px;
+   }
+   
+   .facebook-btn {
+     background-color: #4267B2; /* Default Facebook button color */
+   }
+   
+   .google-btn i, .facebook-btn i {
+     margin-right: 8px;
+   }
+   

@@ -1,0 +1,43 @@
+/* Perspective for the flip effect */
+.leaderboard-card {
+     perspective: 1000px;
+   }
+   
+   .card-inner {
+     position: relative;
+     width: 100%;
+     height: 100%;
+     transition: transform 0.5s;
+     transform-style: preserve-3d;
+   }
+   
+   .card-inner.flipped {
+     transform: rotateY(180deg);
+   }
+   
+   .card-front,
+   .card-back {
+     position: absolute;
+     width: 100%;
+     height: 100%;
+     backface-visibility: hidden;
+     border-radius: 0.5rem; /* To match Tailwind rounded-lg */
+   }
+   
+   .card-front {
+     display: flex;
+     flex-direction: column;
+     justify-content: center;
+     align-items: center;
+     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+   }
+   
+   .card-back {
+     color: white;
+     transform: rotateY(180deg);
+     display: flex;
+     flex-direction: column;
+     justify-content: center;
+     align-items: center;
+   }
+   
