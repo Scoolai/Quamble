@@ -6,3 +6,11 @@
   from = "/*"
   to = "/index.html"
   status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/*"
+  to = "http://3.110.46.79:5000/:splat"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
