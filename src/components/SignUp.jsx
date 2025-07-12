@@ -3,7 +3,7 @@ import React, { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 
 // Fix: Remove trailing slash and quotes from the environment variable
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "https://3.110.46.79:5000").replace(/\/$/, '')
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://3.110.46.79:5000").replace(/\/$/, '')
 
 export default function SignUp() {
     const navigate = useNavigate()
