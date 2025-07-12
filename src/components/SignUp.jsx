@@ -69,7 +69,7 @@ export default function SignUp() {
                 // Navigate to login page after successful signup
                 setTimeout(() => {
                     navigate("/login")
-                }, 2000)
+                }, 200000)
             }
         } catch (error) {
             console.error("Signup error:", error)
