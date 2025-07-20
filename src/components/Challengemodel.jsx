@@ -4,7 +4,7 @@ import axios from "axios"
 import { useAuth } from "../context/AuthContext"
 
 // Fix the API base URL - remove trailing slash
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "https://3.110.46.79:5000").replace(/\/$/, '')
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "https://raj-tomar001-quamble.hf.space/").replace(/\/$/, '')
 
 export default function Challengemodel() {
     const [challengeType, setChallengeType] = useState("")

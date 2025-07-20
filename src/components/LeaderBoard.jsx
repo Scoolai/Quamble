@@ -10,7 +10,7 @@ export default function LeaderBoard() {
     const [error, setError] = useState(null)
 
     // Keep the API URL with trailing slash as hosted
-    const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "https://3.110.46.79:5000").replace(/\/$/, '')
+    const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "https://raj-tomar001-quamble.hf.space/")
 
     useEffect(() => {
         if (isAuthenticated()) {
