@@ -6,6 +6,20 @@ import { getAuthToken, isAuthenticated } from "../utils/auth"
 // Fix: Remove trailing slash to prevent double slashes
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "https://raj-tomar001-quamble.hf.space/").replace(/\/$/, '')
 
+// Add this helper function at the top of your file
+function parseOptionsFromQuestion(questionText) {
+    // Example: "Which...?\nA) Tardigrades\nB) Dolphins\nC) Camels\nD) Honeybees"
+    const optionLines = questionText.split('\n').filter(line => /^[A-D]\)/.test(line.trim()));
+    const options = {};
+    optionLines.forEach(line => {
+        const match = line.match(/^([A-D])\)\s*(.*)$/);
+        if (match) {
+            options[match[1]] = match[2];
+        }
+    });
+    return options;
+}
+
 // Beat the AI Game Component
 const BeatTheAI = () => {
     const navigate = useNavigate()
@@ -77,8 +91,9 @@ const BeatTheAI = () => {
                 setGameState(prev => ({
                     ...prev,
                     currentQuestion: {
-                        question: response.data.question,
-                        options: response.data.options,
+                        question: response.data.question.split('\n')[0],
+                        options: parseOptionsFromQuestion(response.data.question),
+                        correctOption: response.data["Correct Option"], // <-- store correct option
                         difficulty: response.data.difficulty,
                         theme: response.data.theme
                     },
@@ -120,10 +135,10 @@ const BeatTheAI = () => {
 
     // Handle answer selection
     const handleAnswer = async (selectedOption) => {
-        // For now, we'll assume the answer is correct and increment score
-        // In a real implementation, you'd need another API to check the answer
-        const isCorrect = true // This should come from answer validation API
-        
+        const isCorrect =
+            gameState.currentQuestion &&
+            selectedOption === gameState.currentQuestion.correctOption;
+
         if (isCorrect) {
             setGameState(prev => ({
                 ...prev,
@@ -283,7 +298,7 @@ const BeatTheAI = () => {
                 </div>
 
                 {/* Question */}
-                {gameState.currentQuestion && (
+                {gameState.currentQuestion && gameState.currentQuestion.options && (
                     <div>
                         <h2 className="text-xl font-semibold text-gray-800 mb-6 text-center">
                             {gameState.currentQuestion.question}
@@ -303,7 +318,6 @@ const BeatTheAI = () => {
                                 </button>
                             ))}
                         </div>
-
                         {/* Quit Button */}
                         <div className="text-center mt-8">
                             <button
