@@ -69,7 +69,7 @@ export default function SignUp() {
                 // Navigate to login page after successful signup
                 setTimeout(() => {
                     navigate("/login")
-                }, 200000)
+                }, 2000) // Redirect after 2 seconds (was 200000)
             }
         } catch (error) {
             console.error("Signup error:", error)
@@ -199,23 +199,9 @@ export default function SignUp() {
                             </div>
 
                             {/* Role */}
-                            <div>
-                                <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-                                    Role
-                                </label>
-                                <div className="mt-1">
-                                    <select
-                                        id="role"
-                                        name="role"
-                                        value={formData.role}
-                                        onChange={handleChange}
-                                        required
-                                        className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm">
-                                        <option value="player">Player</option>
-                                        <option value="admin">Admin</option>
-                                    </select>
-                                </div>
-                            </div>
+                            
+                            {/* Role (hidden input, fixed to player) */}
+                            <input type="hidden" name="role" value="player" />
 
                             {/* Preferences */}
                             <div>

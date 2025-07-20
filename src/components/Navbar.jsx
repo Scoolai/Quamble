@@ -133,13 +133,7 @@ export default function Navbar() {
 											Your Profile
 										</button>
 									</MenuItem>
-									<MenuItem>
-										<a
-											href="#"
-											className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-											Settings
-										</a>
-									</MenuItem>
+									
 									<MenuItem>
 										{/* Sign out button with logout function */}
 										<button
