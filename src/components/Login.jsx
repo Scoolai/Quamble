@@ -65,7 +65,11 @@ export default function Login() {
             // Handle specific error messages
             if (err.response) {
                 if (err.response.status === 401) {
+                    // Remove token and username, redirect to login
+                    localStorage.removeItem("authToken")
+                    localStorage.removeItem("username")
                     setError("Invalid email or password")
+                    navigate("/login")
                 } else if (err.response.data && err.response.data.message) {
                     setError(err.response.data.message)
                 } else {
