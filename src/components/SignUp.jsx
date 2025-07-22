@@ -1,9 +1,21 @@
 import axios from "axios"
 import React, { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
+import Select from "react-select"
 
 // Fix: Remove trailing slash and quotes from the environment variable
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "https://raj-tomar001-quamble.hf.space/").replace(/\/$/, '')
+
+const preferenceOptions = [
+    { value: "Sports", label: "Sports" },
+    { value: "Programming", label: "Programming" },
+    { value: "Music", label: "Music" },
+    { value: "Cricket", label: "Cricket" },
+    { value: "Geography", label: "Geography" },
+    { value: "History", label: "History" },
+    { value: "Science", label: "Science" },
+    { value: "Others", label: "Others" },
+]
 
 export default function SignUp() {
     const navigate = useNavigate()
@@ -88,6 +100,18 @@ export default function SignUp() {
             setLoading(false)
         }
     }
+
+    const selectedPreferences = [
+        formData.preference_1,
+        formData.preference_2,
+        formData.preference_3,
+        formData.preference_4,
+    ]
+
+    const getFilteredOptions = (excludeList) =>
+        preferenceOptions.filter(
+            opt => !excludeList.includes(opt.value)
+        )
 
     return (
         <>
@@ -205,70 +229,65 @@ export default function SignUp() {
 
                             {/* Preferences */}
                             <div>
-                                <label htmlFor="preference_1" className="block text-sm font-medium text-gray-700">
+                                <label className="block text-sm font-medium text-gray-700">
                                     Preference 1
                                 </label>
                                 <div className="mt-1">
-                                    <input
-                                        id="preference_1"
+                                    <Select
                                         name="preference_1"
-                                        type="text"
-                                        required
-                                        value={formData.preference_1}
-                                        onChange={handleChange}
-                                        className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                        placeholder="Enter your first preference"
+                                        options={getFilteredOptions([])}
+                                        value={preferenceOptions.find(opt => opt.value === formData.preference_1)}
+                                        onChange={selected => setFormData({ ...formData, preference_1: selected ? selected.value : "" })}
+                                        isSearchable
+                                        placeholder="Select your first preference"
                                     />
                                 </div>
                             </div>
-
                             <div>
-                                <label htmlFor="preference_2" className="block text-sm font-medium text-gray-700">
+                                <label className="block text-sm font-medium text-gray-700">
                                     Preference 2
                                 </label>
                                 <div className="mt-1">
-                                    <input
-                                        id="preference_2"
+                                    <Select
                                         name="preference_2"
-                                        type="text"
-                                        value={formData.preference_2}
-                                        onChange={handleChange}
-                                        className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                        placeholder="Enter your second preference"
+                                        options={getFilteredOptions([formData.preference_1])}
+                                        value={preferenceOptions.find(opt => opt.value === formData.preference_2)}
+                                        onChange={selected => setFormData({ ...formData, preference_2: selected ? selected.value : "" })}
+                                        isSearchable
+                                        placeholder="Select your second preference"
+                                        isDisabled={!formData.preference_1}
                                     />
                                 </div>
                             </div>
-
                             <div>
-                                <label htmlFor="preference_3" className="block text-sm font-medium text-gray-700">
+                                <label className="block text-sm font-medium text-gray-700">
                                     Preference 3
                                 </label>
                                 <div className="mt-1">
-                                    <input
-                                        id="preference_3"
+                                    <Select
                                         name="preference_3"
-                                        type="text"
-                                        value={formData.preference_3}
-                                        onChange={handleChange}
-                                        className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                        placeholder="Enter your third preference"
+                                        options={getFilteredOptions([formData.preference_1, formData.preference_2])}
+                                        value={preferenceOptions.find(opt => opt.value === formData.preference_3)}
+                                        onChange={selected => setFormData({ ...formData, preference_3: selected ? selected.value : "" })}
+                                        isSearchable
+                                        placeholder="Select your third preference"
+                                        isDisabled={!formData.preference_2}
                                     />
                                 </div>
                             </div>
-
                             <div>
-                                <label htmlFor="preference_4" className="block text-sm font-medium text-gray-700">
+                                <label className="block text-sm font-medium text-gray-700">
                                     Preference 4
                                 </label>
                                 <div className="mt-1">
-                                    <input
-                                        id="preference_4"
+                                    <Select
                                         name="preference_4"
-                                        type="text"
-                                        value={formData.preference_4}
-                                        onChange={handleChange}
-                                        className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                        placeholder="Enter your fourth preference"
+                                        options={getFilteredOptions([formData.preference_1, formData.preference_2, formData.preference_3])}
+                                        value={preferenceOptions.find(opt => opt.value === formData.preference_4)}
+                                        onChange={selected => setFormData({ ...formData, preference_4: selected ? selected.value : "" })}
+                                        isSearchable
+                                        placeholder="Select your fourth preference"
+                                        isDisabled={!formData.preference_3}
                                     />
                                 </div>
                             </div>
