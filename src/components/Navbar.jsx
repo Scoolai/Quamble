@@ -14,7 +14,7 @@ import { useState } from "react"
 import { useAuth } from "../context/AuthContext"
 
 const navigation = [
-	{ name: "Dashboard", href: "/dashboard" },
+	{ name: "Profile", href: "/dashboard" },
 	{ name: "Home", href: "/" },
 	{ name: "Quizzes", href: "/quiz" },
 	{ name: "About Us", href: "/aboutus" },
