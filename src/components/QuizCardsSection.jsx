@@ -4,52 +4,55 @@ import { useAuth } from "../context/AuthContext"
 
 const defaultQuizCardsData = [
 	{
-		title: "Science",
-		description:
-			"The cutting-edge language model that makes interactions a breeze...",
-		image: "https://www.svgrepo.com/show/530438/ddos-protection.svg",
-		background: "/assets/Cards/science.jpeg",
-	},
-	{
-		title: "History",
-		description: "Simply input your subject, click the generate button...",
-		image: "https://www.svgrepo.com/show/530442/port-detection.svg",
-		background: "/assets/Cards/history.jpg",
-	},
-	{
-		title: "Geography",
-		description:
-			"We offer advanced customization. You can freely combine options...",
-		image: "https://www.svgrepo.com/show/530444/availability.svg",
-		background: "/assets/Cards/geography.png",
-	},
-	{
-		title: "Cricket",
-		description:
-			"Test your knowledge of cricket history, players, records, and rules...",
-		image: "https://www.svgrepo.com/show/530445/cricket.svg",
-		background: "/assets/Cards/music.jpg",
-	},
-	{
-		title: "Music",
-		description: "We offer a free trial service without login...",
-		image: "https://www.svgrepo.com/show/530440/machine-vision.svg",
-		background: "/assets/Cards/music.jpg",
-	},
-	{
-		title: "Programming",
-		description:
-			"We offer many templates covering areas such as writing...",
-		image: "https://www.svgrepo.com/show/530450/page-analysis.svg",
-		background: "/assets/Cards/programming.png",
-	},
-	{
-		title: "Sports",
-		description:
-			"Our product is compatible with multiple platforms including Web...",
-		image: "https://www.svgrepo.com/show/530453/mail-reception.svg",
-		background: "/assets/Cards/sports.png",
-	},
+	title: "Science",
+	description:
+		"Challenge your brain with quizzes on physics, chemistry, biology, inventions, and scientific facts.",
+	image: "https://www.svgrepo.com/show/530438/ddos-protection.svg",
+	background: "/assets/Cards/science.jpeg",
+},
+{
+	title: "History",
+	description:
+		"Test your knowledge of historical events, famous personalities, empires, and important dates.",
+	image: "https://www.svgrepo.com/show/530442/port-detection.svg",
+	background: "/assets/Cards/history.jpg",
+},
+{
+	title: "Geography",
+	description:
+		"Identify countries, capitals, landmarks, rivers, and more in exciting world geography quizzes.",
+	image: "https://www.svgrepo.com/show/530444/availability.svg",
+	background: "/assets/Cards/geography.png",
+},
+{
+	title: "Cricket",
+	description:
+		"How well do you know cricket? Take quizzes on players, World Cups, records, and game rules.",
+	image: "https://www.svgrepo.com/show/530450/page-analysis.svg",
+	background: "/assets/Cards/Crickets.png",
+},
+{
+	title: "Music",
+	description:
+		"Guess the artist, song, instrument, or genre! A perfect challenge for music lovers everywhere.",
+	image: "https://www.svgrepo.com/show/530440/machine-vision.svg",
+	background: "/assets/Cards/music.jpg",
+},
+{
+	title: "Programming",
+	description:
+		"Take coding quizzes on logic, syntax, languages, algorithms, and everything software-related.",
+	image: "https://www.svgrepo.com/show/530450/page-analysis.svg",
+	background: "/assets/Cards/programming.png",
+},
+{
+	title: "Sports",
+	description:
+		"From football to Olympics—answer questions on rules, players, records, and sports trivia.",
+	image: "https://www.svgrepo.com/show/530453/mail-reception.svg",
+	background: "/assets/Cards/sports.png",
+}
+
 ]
 
 export default function QuizCardsSection() {
