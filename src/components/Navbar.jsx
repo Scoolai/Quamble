@@ -154,7 +154,7 @@ export default function Navbar() {
 							</button>
 						) : (
 							<div className="ml-3 text-sm text-gray-300">
-								Welcome, {currentUser?.username || "User"}
+								Welcome, {localStorage.getItem("username") || "User"}
 							</div>
 						)}
 
