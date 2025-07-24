@@ -152,13 +152,9 @@ export default function Navbar() {
 								className="ml-3 rounded-md bg-indigo-600 px-3 py-1 text-white font-medium hover:bg-indigo-500">
 								<Link to="/login">Login</Link>
 							</button>
-						) : currentUser ? (
-							<div className="ml-3 text-sm text-gray-300">
-								Welcome, {currentUser.username}
-							</div>
 						) : (
 							<div className="ml-3 text-sm text-gray-300">
-								Welcome {localStorage.getItem("username") || "User"}
+								Welcome, {currentUser?.username || "User"}
 							</div>
 						)}
 

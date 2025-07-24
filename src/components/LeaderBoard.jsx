@@ -32,11 +32,14 @@ export default function LeaderBoard() {
             console.log("API URL:", `${API_BASE_URL}leaderboard_overall`)
 
             // Fetch all leaderboards concurrently
-            const [overallResponse, dailyResponse] = await Promise.allSettled([
+            const [overallResponse, dailyResponse, weeklyResponse] = await Promise.allSettled([
                 axios.get(`${API_BASE_URL}leaderboard_overall`, {
                     headers: { Authorization: `Bearer ${token}` },
                 }),
                 axios.get(`${API_BASE_URL}leaderboard_daily`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                }),
+                axios.get(`${API_BASE_URL}leaderboard_weekly`, {
                     headers: { Authorization: `Bearer ${token}` },
                 }),
             ])
@@ -94,16 +97,17 @@ export default function LeaderBoard() {
                 const dailyData = dailyResponse.value.data
                 console.log("Daily leaderboard data:", dailyData)
 
-                if (dailyData.status === "success" && dailyData.leaderboard) {
+                if (dailyData.status === "success" && Array.isArray(dailyData.leaderboard)) {
                     if (dailyData.leaderboard.length > 0) {
                         leaderboards.push({
                             title: "Daily Top 5",
                             players: dailyData.leaderboard
-                                .slice(0, 5) // Ensure we only take top 5
+                                .slice(0, 5)
                                 .map((player, index) => {
                                     const rank = index + 1
                                     const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : ""
-                                    return `${medal} ${player.username} (${player.total_score} pts)`
+                                    // Use daily_score for daily leaderboard
+                                    return `${medal} ${player.username} (${player.daily_score} pts)`
                                 })
                         })
                     } else {
@@ -118,8 +122,18 @@ export default function LeaderBoard() {
                             ]
                         })
                     }
+                } else if (dailyData.status === "error" && dailyData.message) {
+                    leaderboards.push({
+                        title: "Daily Top 5",
+                        players: [
+                            "Error loading data",
+                            dailyData.message,
+                            "",
+                            "",
+                            ""
+                        ]
+                    })
                 } else {
-                    console.error("Daily leaderboard error:", dailyData.message || "Unknown error")
                     leaderboards.push({
                         title: "Daily Top 5",
                         players: [
@@ -145,17 +159,72 @@ export default function LeaderBoard() {
                 })
             }
 
-            // Add a placeholder for weekly (since API doesn't have weekly endpoint)
-            leaderboards.push({
-                title: "Weekly Top 5",
-                players: [
-                    "Coming Soon!",
-                    "Weekly stats",
-                    "will be available",
-                    "in next update",
-                    "⏰",
-                ],
-            })
+            // Process weekly leaderboard
+            if (weeklyResponse.status === "fulfilled") {
+                const weeklyData = weeklyResponse.value.data
+                console.log("Weekly leaderboard data:", weeklyData)
+
+                if (weeklyData.status === "success" && Array.isArray(weeklyData.leaderboard)) {
+                    if (weeklyData.leaderboard.length > 0) {
+                        leaderboards.push({
+                            title: "Weekly Top 5",
+                            players: weeklyData.leaderboard
+                                .slice(0, 5)
+                                .map((player, index) => {
+                                    const rank = index + 1
+                                    const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : ""
+                                    // Use weekly_score for weekly leaderboard
+                                    return `${medal} ${player.username} (${player.weekly_score} pts)`
+                                })
+                        })
+                    } else {
+                        leaderboards.push({
+                            title: "Weekly Top 5",
+                            players: [
+                                "No players this week",
+                                "Start playing!",
+                                "Be the first",
+                                "on the board",
+                                "🎯"
+                            ]
+                        })
+                    }
+                } else if (weeklyData.status === "error" && weeklyData.message) {
+                    leaderboards.push({
+                        title: "Weekly Top 5",
+                        players: [
+                            "Error loading data",
+                            weeklyData.message,
+                            "",
+                            "",
+                            ""
+                        ]
+                    })
+                } else {
+                    leaderboards.push({
+                        title: "Weekly Top 5",
+                        players: [
+                            "Error loading data",
+                            "Please try again",
+                            "later",
+                            "",
+                            ""
+                        ]
+                    })
+                }
+            } else {
+                console.error("Weekly leaderboard request failed:", weeklyResponse.reason)
+                leaderboards.push({
+                    title: "Weekly Top 5",
+                    players: [
+                        "Failed to load",
+                        "Network error",
+                        "Please check",
+                        "connection",
+                        ""
+                    ]
+                })
+            }
 
             setLeaderboardData(leaderboards)
 
