@@ -20,6 +20,17 @@ function parseOptionsFromQuestion(questionText) {
     return options;
 }
 
+const THEME_OPTIONS = [
+  "random facts about animals",
+  "science",
+  "history",
+  "sports",
+  "music",
+  "geography",
+  "programming",
+  // Add more themes as needed
+];
+
 // Beat the AI Game Component
 const BeatTheAI = () => {
     const navigate = useNavigate()
@@ -34,6 +45,7 @@ const BeatTheAI = () => {
         gameOver: false,
         error: null
     })
+    const [selectedTheme, setSelectedTheme] = useState(""); // Set initial value to empty string
 
     // Check authentication
     useEffect(() => {
@@ -50,14 +62,14 @@ const BeatTheAI = () => {
             score: 0,
             questionCount: 0,
             gameOver: false,
-            error: null
+            error: null,
+            theme: selectedTheme, // Set the selected theme here
         }))
-        
-        await fetchNextQuestion()
+        await fetchNextQuestion(selectedTheme)
     }
 
     // Fetch next question from API
-    const fetchNextQuestion = async () => {
+    const fetchNextQuestion = async (themeOverride) => {
         if (!isAuthenticated()) return
 
         try {
@@ -66,13 +78,14 @@ const BeatTheAI = () => {
             const token = getAuthToken()
             const formData = new FormData()
             
-            // Send current theme and score to determine difficulty
-            formData.append("theme", gameState.theme || "random")
+            // Use themeOverride if provided, otherwise use gameState.theme
+            const themeToSend = themeOverride || gameState.theme || "random facts about animals"
+            formData.append("theme", themeToSend)
             formData.append("score", gameState.score.toString())
 
             console.log("Fetching next question...")
             console.log("API URL:", `${API_BASE_URL}/beat_the_ai`)
-            console.log("Data:", { theme: gameState.theme || "random", score: gameState.score })
+            console.log("Data:", { theme: themeToSend, score: gameState.score })
 
             const response = await axios.post(
                 `${API_BASE_URL}/beat_the_ai`,
@@ -176,11 +189,34 @@ const BeatTheAI = () => {
         })
     }
 
-    // If not playing, show the start card
+    // If not playing, show the start card with theme selection
     if (!gameState.isPlaying && !gameState.gameOver) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
-                <div className="mt-8 flex justify-center">
+                <div className="mt-8 flex flex-col items-center">
+                    <div className="mb-6 w-80">
+                        <label className="block text-white text-lg font-semibold mb-2">
+                          Select Theme
+                        </label>
+                        <select
+                          className="w-full p-3 rounded-lg bg-white text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-400 border border-gray-300 shadow"
+                          value={selectedTheme}
+                          onChange={e => setSelectedTheme(e.target.value)}
+                        >
+                          <option value="" disabled>
+                            Select your theme
+                          </option>
+                          {THEME_OPTIONS.map(theme => (
+                            <option
+                              key={theme}
+                              value={theme}
+                              className="bg-white text-gray-900"
+                            >
+                              {theme}
+                            </option>
+                          ))}
+                        </select>
+                    </div>
                     <div
                         onClick={startGame}
                         className="relative cursor-pointer flex flex-col justify-between min-h-32 w-80 rounded-tr-3xl rounded-bl-3xl hover:scale-105 transition-all ease-in-out duration-500 hover:shadow-2xl hover:shadow-black hover:rounded-tl-3xl hover:rounded-br-3xl bg-gradient-to-r from-red-600 to-purple-600">
