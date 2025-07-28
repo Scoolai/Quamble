@@ -45,7 +45,8 @@ const BeatTheAI = () => {
         gameOver: false,
         error: null
     })
-    const [selectedTheme, setSelectedTheme] = useState(""); // Set initial value to empty string
+    const [selectedTheme, setSelectedTheme] = useState("");
+    const [inputTheme, setInputTheme] = useState(""); // New state for input theme
 
     // Check authentication
     useEffect(() => {
@@ -97,8 +98,6 @@ const BeatTheAI = () => {
                     },
                 }
             )
-
-            console.log("Beat the AI response:", response.data)
 
             if (response.data && response.data.question) {
                 setGameState(prev => ({
@@ -196,26 +195,25 @@ const BeatTheAI = () => {
                 <div className="mt-8 flex flex-col items-center">
                     <div className="mb-6 w-80">
                         <label className="block text-white text-lg font-semibold mb-2">
-                          Select Theme
+                          Enter Theme
                         </label>
-                        <select
-                          className="w-full p-3 rounded-lg bg-white text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-400 border border-gray-300 shadow"
-                          value={selectedTheme}
-                          onChange={e => setSelectedTheme(e.target.value)}
-                        >
-                          <option value="" disabled>
-                            Select your theme
-                          </option>
-                          {THEME_OPTIONS.map(theme => (
-                            <option
-                              key={theme}
-                              value={theme}
-                              className="bg-white text-gray-900"
-                            >
-                              {theme}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="flex">
+                          <input
+                            type="text"
+                            className="flex-1 p-3 rounded-l-lg bg-white text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-400 border border-gray-300 shadow"
+                            placeholder="Type your theme..."
+                            value={inputTheme}
+                            onChange={e => setInputTheme(e.target.value)}
+                          />
+                          <button
+                            type="button"
+                            className="px-4 rounded-r-lg bg-blue-600 text-white font-semibold hover:bg-blue-500 transition"
+                            onClick={() => setSelectedTheme(inputTheme)}
+                            disabled={!inputTheme.trim()}
+                          >
+                            OK
+                          </button>
+                        </div>
                     </div>
                     <div
                         onClick={startGame}
