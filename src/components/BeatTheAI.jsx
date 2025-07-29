@@ -74,7 +74,7 @@ const BeatTheAI = () => {
 
     // Start new game
     const startGame = async () => {
-      let themeToUse = "random";
+      let themeToUse = "random topics";  // Changed from "random" to "random topics"
       if (challengeType === "theme") {
         themeToUse = selectedTheme || "general";
       }
