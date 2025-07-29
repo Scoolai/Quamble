@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import axios from "axios"
 import { getAuthToken, isAuthenticated } from "../utils/auth"
 
@@ -34,6 +34,11 @@ const THEME_OPTIONS = [
 // Beat the AI Game Component
 const BeatTheAI = () => {
     const navigate = useNavigate()
+    const location = useLocation();
+    const params = new URLSearchParams(location.search);
+    const challengeType = params.get("challengeType") || "headtohead";
+    const themeFromUrl = params.get("theme");
+
     const [gameState, setGameState] = useState({
         isPlaying: false,
         currentQuestion: null,
@@ -45,8 +50,9 @@ const BeatTheAI = () => {
         gameOver: false,
         error: null
     })
-    const [selectedTheme, setSelectedTheme] = useState("");
+    const [selectedTheme, setSelectedTheme] = useState(themeFromUrl || "");
     const [inputTheme, setInputTheme] = useState(""); // New state for input theme
+    // New state for challenge type
 
     // Check authentication
     useEffect(() => {
@@ -55,18 +61,33 @@ const BeatTheAI = () => {
         }
     }, [navigate])
 
+    useEffect(() => {
+      // If you want to get theme from URL:
+      const params = new URLSearchParams(window.location.search);
+      const themeFromUrl = params.get("theme");
+      if (themeFromUrl === "random" || !themeFromUrl) {
+        setSelectedTheme("random");
+      } else {
+        setSelectedTheme(themeFromUrl);
+      }
+    }, []);
+
     // Start new game
     const startGame = async () => {
-        setGameState(prev => ({
-            ...prev,
-            isPlaying: true,
-            score: 0,
-            questionCount: 0,
-            gameOver: false,
-            error: null,
-            theme: selectedTheme, // Set the selected theme here
-        }))
-        await fetchNextQuestion(selectedTheme)
+      let themeToUse = "random";
+      if (challengeType === "theme") {
+        themeToUse = selectedTheme || "general";
+      }
+      setGameState(prev => ({
+        ...prev,
+        isPlaying: true,
+        score: 0,
+        questionCount: 0,
+        gameOver: false,
+        error: null,
+        theme: themeToUse,
+      }));
+      await fetchNextQuestion(themeToUse);
     }
 
     // Fetch next question from API
@@ -190,50 +211,76 @@ const BeatTheAI = () => {
 
     // If not playing, show the start card with theme selection
     if (!gameState.isPlaying && !gameState.gameOver) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
-                <div className="mt-8 flex flex-col items-center">
-                    <div className="mb-6 w-80">
-                        <label className="block text-white text-lg font-semibold mb-2">
-                          Enter Theme
-                        </label>
-                        <div className="flex">
-                          <input
-                            type="text"
-                            className="flex-1 p-3 rounded-l-lg bg-white text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-400 border border-gray-300 shadow"
-                            placeholder="Type your theme..."
-                            value={inputTheme}
-                            onChange={e => setInputTheme(e.target.value)}
-                          />
-                          <button
-                            type="button"
-                            className="px-4 rounded-r-lg bg-blue-600 text-white font-semibold hover:bg-blue-500 transition"
-                            onClick={() => setSelectedTheme(inputTheme)}
-                            disabled={!inputTheme.trim()}
-                          >
-                            OK
-                          </button>
+        if (challengeType === "theme") {
+            // Show theme input for Theme Challenge
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
+                    <div className="mt-8 flex flex-col items-center">
+                        <div className="mb-6 w-80">
+                            <label className="block text-white text-lg font-semibold mb-2">
+                                Enter Theme
+                            </label>
+                            <div className="flex">
+                                <input
+                                    type="text"
+                                    className="flex-1 p-3 rounded-l-lg bg-white text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-400 border border-gray-300 shadow"
+                                    placeholder="Type your theme..."
+                                    value={inputTheme}
+                                    onChange={e => setInputTheme(e.target.value)}
+                                />
+                                <button
+                                    type="button"
+                                    className="px-4 rounded-r-lg bg-blue-600 text-white font-semibold hover:bg-blue-500 transition"
+                                    onClick={() => setSelectedTheme(inputTheme)}
+                                    disabled={!inputTheme.trim()}
+                                >
+                                    OK
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    <div
-                        onClick={startGame}
-                        className="relative cursor-pointer flex flex-col justify-between min-h-32 w-80 rounded-tr-3xl rounded-bl-3xl hover:scale-105 transition-all ease-in-out duration-500 hover:shadow-2xl hover:shadow-black hover:rounded-tl-3xl hover:rounded-br-3xl bg-gradient-to-r from-red-600 to-purple-600">
-                        <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent rounded-tr-3xl rounded-bl-3xl hover:rounded-tl-3xl transition-all ease-out duration-500" />
-                        <div className="relative block px-6 py-4 text-center">
-                            <h3 className="text-2xl font-bold text-white mb-2">
-                                🤖 Beat the AI
-                            </h3>
-                            <p className="text-sm text-white">
-                                Challenge our AI with increasing difficulty!
-                            </p>
-                            <p className="text-xs text-white/80 mt-2">
-                                Click to start playing
-                            </p>
+                        <div
+                            onClick={startGame}
+                            className="relative cursor-pointer flex flex-col justify-between min-h-32 w-80 rounded-tr-3xl rounded-bl-3xl hover:scale-105 transition-all ease-in-out duration-500 hover:shadow-2xl hover:shadow-black hover:rounded-tl-3xl hover:rounded-br-3xl bg-gradient-to-r from-red-600 to-purple-600">
+                            <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent rounded-tr-3xl rounded-bl-3xl hover:rounded-tl-3xl transition-all ease-out duration-500" />
+                            <div className="relative block px-6 py-4 text-center">
+                                <h3 className="text-2xl font-bold text-white mb-2">
+                                    🤖 Beat the AI
+                                </h3>
+                                <p className="text-sm text-white">
+                                    Challenge our AI with increasing difficulty!
+                                </p>
+                                <p className="text-xs text-white/80 mt-2">
+                                    Click to start playing
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
+            );
+        }
+        // Head-to-head: just show the start button
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
+            <div className="mt-8 flex flex-col items-center">
+              <div
+                  onClick={startGame}
+                  className="relative cursor-pointer flex flex-col justify-between min-h-32 w-80 rounded-tr-3xl rounded-bl-3xl hover:scale-105 transition-all ease-in-out duration-500 hover:shadow-2xl hover:shadow-black hover:rounded-tl-3xl hover:rounded-br-3xl bg-gradient-to-r from-red-600 to-purple-600">
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent rounded-tr-3xl rounded-bl-3xl hover:rounded-tl-3xl transition-all ease-out duration-500" />
+                  <div className="relative block px-6 py-4 text-center">
+                      <h3 className="text-2xl font-bold text-white mb-2">
+                          🤖 Beat the AI
+                      </h3>
+                      <p className="text-sm text-white">
+                          Challenge our AI with increasing difficulty!
+                      </p>
+                      <p className="text-xs text-white/80 mt-2">
+                          Click to start playing
+                      </p>
+                  </div>
+              </div>
             </div>
-        )
+          </div>
+        );
     }
 
     // Show game over screen
@@ -361,6 +408,38 @@ const BeatTheAI = () => {
                             </button>
                         </div>
                     </div>
+                )}
+
+                {/* Challenge Type Selection - New Section */}
+                {challengeType === "Theme Challenge" && (
+                  <div className="bg-white rounded-lg shadow p-5 mb-4">
+                    <h3 className="text-md font-bold text-gray-700 mb-3">Select Theme</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {THEME_OPTIONS.map((theme) => (
+                        <button
+                          key={theme}
+                          className={`px-4 py-2 rounded-full border text-sm font-medium ${
+                            selectedTheme === theme
+                              ? "bg-[#661fff] text-white border-[#661fff]"
+                              : "bg-gray-100 text-gray-700 border-gray-200"
+                          }`}
+                          onClick={() => setSelectedTheme(theme)}
+                        >
+                          {theme.charAt(0).toUpperCase() + theme.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+                    {/* Optional: allow custom theme entry */}
+                    <div className="mt-4">
+                      <input
+                        type="text"
+                        placeholder="Or type a custom theme..."
+                        value={selectedTheme}
+                        onChange={e => setSelectedTheme(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#661fff]"
+                      />
+                    </div>
+                  </div>
                 )}
             </div>
         </div>

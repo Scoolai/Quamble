@@ -13,7 +13,8 @@ export default function Challengemodel() {
         totalQuestions: 0,
         averageTime: 0,
     })
-    // REMOVED: aiPerformance state
+    const [themePerformance, setThemePerformance] = useState(null)
+    const [themePerformanceLoading, setThemePerformanceLoading] = useState(false)
     const [loading, setLoading] = useState(false)
     const [themesLoading, setThemesLoading] = useState(true)
     const [recentQuizzes, setRecentQuizzes] = useState([])
@@ -23,6 +24,8 @@ export default function Challengemodel() {
     const [selectedTheme, setSelectedTheme] = useState("general")
     const [themes, setThemes] = useState([])
     const [themesError, setThemesError] = useState(null)
+    const [themeSearch, setThemeSearch] = useState(""); // Add this at the top with other useState
+    
 
     const navigate = useNavigate()
     const { getAuthToken, isAuthenticated } = useAuth()
@@ -30,17 +33,17 @@ export default function Challengemodel() {
     // Challenge modes
     const challengeModes = [
         {
-            id: "head-to-head",
-            title: "Head-to-Head Mode",
-            description:
-                "Answer questions alongside AI and compete for accuracy and speed.",
-            apiEndpoint: "/beat_the_ai",
-        },
-        {
             id: "theme-challenge",
             title: "Theme Challenge",
             description: "Test your knowledge in a specific theme against AI.",
-            apiEndpoint: "/create_quiz_from_bank",
+            apiEndpoint: "/beat_the_ai",
+        },
+        {
+            id: "head-to-head",
+            title: "Head-to-Head Mode",
+            description:
+                "Compete against AI on random themes.",
+            apiEndpoint: "/beat_the_ai",
         },
         {
             id: "create-quiz",
@@ -312,6 +315,28 @@ export default function Challengemodel() {
         }
     }, [selectedTheme, themes])
 
+    // Scroll to top on component mount
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }, []);
+
+    // New useEffect to set default theme
+    useEffect(() => {
+  if (themes.length > 0) {
+    // If "cricket" exists, select it; otherwise, select the first theme
+    if (themes.includes("cricket")) {
+      setSelectedTheme("cricket");
+      fetchThemeLeaderboard("cricket");
+      fetchThemePerformance("cricket");
+    } else if (!themes.includes(selectedTheme)) {
+      setSelectedTheme(themes[0]);
+      fetchThemeLeaderboard(themes[0]);
+      fetchThemePerformance(themes[0]);
+    }
+  }
+  // eslint-disable-next-line
+}, [themes]);
+
     const fetchUserData = async () => {
         setLoading(true)
         const token = getAuthToken()
@@ -329,6 +354,7 @@ export default function Challengemodel() {
 
             if (recentResponse.data && recentResponse.data.quizzes) {
                 setRecentQuizzes(recentResponse.data.quizzes)
+                console.log("Fetched recent quizzes:", recentResponse.data.quizzes); // <-- Add this line
 
                 // Calculate user performance from recent quizzes
                 const quizzes = recentResponse.data.quizzes
@@ -428,45 +454,60 @@ export default function Challengemodel() {
         }
     }
 
+    // New function to fetch theme performance data
+    const fetchThemePerformance = async (theme) => {
+        setThemePerformanceLoading(true)
+        try {
+            const token = getAuthToken()
+            const formData = new FormData()
+            formData.append("theme", theme)
+            const response = await axios.post(
+                `${API_BASE_URL}/user_theme_stats`,
+                formData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            )
+            console.log("user_theme_stats response:", response.data) // <-- Add this line
+            setThemePerformance(response.data)
+        } catch (err) {
+            setThemePerformance(null)
+            console.error("Error fetching theme performance:", err)
+        } finally {
+            setThemePerformanceLoading(false)
+        }
+    }
+
     // Handle theme change
     const handleThemeChange = theme => {
         setSelectedTheme(theme)
         fetchThemeLeaderboard(theme)
+        fetchThemePerformance(theme) // Fetch performance data for the selected theme
     }
 
     // Start a challenge based on the selected mode
-    const handleStartChallenge = async () => {
-        const selectedMode =
-            challengeModes.find(
-                mode =>
-                    mode.title
-                        .toLowerCase()
-                        .includes(challengeType.toLowerCase()) ||
-                    mode.id.includes(challengeType.toLowerCase())
-            ) || challengeModes[0]
-
-        if (selectedMode.id === "theme-challenge") {
-            // Navigate to theme challenge with selected theme
-            navigate(`/quiz?theme=${selectedTheme}&mode=theme-challenge`)
-        } else if (selectedMode.id === "create-quiz") {
-            // Navigate to create quiz page
-            navigate("/create-quiz")
-        } else {
-            // Default: head-to-head challenge
-            navigate("/aichallenge/beat-the-ai")
+    const handleStartChallenge = () => {
+        if (challengeType === "Head-to-Head Mode") {
+            navigate("/aichallenge/beat-the-ai?theme=random");
+        } else if (challengeType === "Theme Challenge") {
+            navigate(`/quiz?theme=${selectedTheme}&mode=theme-challenge`);
         }
+        // ...other modes
     }
 
     // Handle direct selection of challenge mode
-    const handleSelectChallengeMode = modeId => {
-        if (modeId === "head-to-head") {
-            navigate("/aichallenge/beat-the-ai")
-        } else if (modeId === "theme-challenge") {
-            navigate(`/quiz?theme=${selectedTheme}&mode=theme-challenge`)
-        } else {
-            navigate("/create-quiz")
+    const handleSelectChallengeMode = (modeId) => {
+        if (modeId === "theme-challenge") {
+            navigate("/aichallenge/beat-the-ai?challengeType=theme");
+        } else if (modeId === "head-to-head") {
+            navigate("/aichallenge/beat-the-ai?challengeType=headtohead&theme=random");
+        } else if (modeId === "create-quiz") {
+            navigate("/create-quiz");
         }
-    }
+    };
 
     return (
         <div className="min-h-screen p-6 md:p-10 bg-gray-100 flex flex-col items-center">
@@ -498,102 +539,179 @@ export default function Challengemodel() {
                                     <p className="text-sm text-gray-600">
                                         {mode.description}
                                     </p>
-                                    <button className="mt-4 text-sm font-medium text-[#661fff] hover:underline">
+                                    <button className="mt-4 text-sm font-medium bg-blue-600 text-white px-5 py-2 rounded-full hover:bg-blue-700">
                                         Start Now →
                                     </button>
                                 </div>
                             ))}
                         </div>
-
-                        {/* Theme Selection */}
-                        <div className="bg-white rounded-lg shadow p-5">
-                            <h3 className="text-md font-bold text-gray-700 mb-3">
-                                Select Theme
-                            </h3>
-                            
-                            {themesLoading ? (
-                                <div className="flex items-center justify-center p-4">
-                                    <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-[#661fff] mr-2"></div>
-                                    <span className="text-gray-600">Loading themes...</span>
-                                </div>
-                            ) : themesError ? (
-                                <div className="p-4 bg-yellow-100 border border-yellow-400 rounded-lg">
-                                    <p className="text-yellow-700 text-sm">
-                                        ⚠️ {themesError}
-                                    </p>
-                                    <p className="text-yellow-600 text-xs mt-1">
-                                        Using default themes. You can still proceed with the challenge.
-                                    </p>
-                                </div>
-                            ) : null}
-                            
-                            <div className="flex flex-wrap gap-2">
-                                {themes.map(theme => (
-                                    <button
-                                        key={theme}
-                                        onClick={() => handleThemeChange(theme)}
-                                        className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                                            selectedTheme === theme
-                                                ? "bg-[#661fff] text-white"
-                                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                        }`}
-                                        disabled={themesLoading}>
-                                        {theme.charAt(0).toUpperCase() + theme.slice(1)}
-                                    </button>
-                                ))}
-                            </div>
-                            
-                            {/* Refresh themes button */}
-                            <div className="mt-3 pt-3 border-t border-gray-200">
-                                <button
-                                    onClick={fetchAllThemes}
-                                    disabled={themesLoading}
-                                    className="text-xs text-blue-600 hover:text-blue-800 disabled:text-gray-400">
-                                    {themesLoading ? "Loading..." : "🔄 Refresh Themes"}
-                                </button>
-                            </div>
+ 
+                        {/* Recent Themes Section */}
+                        <div className="bg-white rounded-lg shadow p-5 mb-4">
+                          <h3 className="text-md font-bold text-gray-700 mb-3">Recent Themes</h3>
+                          <div className="flex flex-wrap gap-2">
+                            {recentQuizzes && recentQuizzes.length > 0 ? (
+                              recentQuizzes
+                                .filter(quiz => quiz.theme) // Filter out quizzes without theme
+                                .slice(0, 4) // Take only the 4 most recent
+                                .map((quiz, idx) => (
+                                  <button
+                                    key={idx}
+                                    onClick={() => handleThemeChange(quiz.theme.toLowerCase())}
+                                    className="px-4 py-2 rounded-full bg-gray-100 text-gray-700 text-sm font-medium 
+                                             border border-gray-200 hover:bg-[#661fff] hover:text-white 
+                                             hover:border-[#661fff] transition-colors duration-200"
+                                  >
+                                    {quiz.theme.charAt(0).toUpperCase() + quiz.theme.slice(1)}
+                                  </button>
+                                ))
+                            ) : (
+                              <span className="text-gray-500 text-sm">No recent themes played yet.</span>
+                            )}
+                          </div>
                         </div>
 
-                        {/* Performance Section - UPDATED to single column */}
-                        <div className="grid grid-cols-1 gap-4">
-                            {/* Your Performance - now takes full width */}
-                            <div className="bg-white rounded-lg shadow p-5">
-                                <h3 className="text-md font-bold text-gray-700 mb-3">
-                                    Your Performance
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div className="text-center">
-                                        <p className="text-2xl font-bold text-[#661fff]">
-                                            {userPerformance.correctAnswers}
-                                        </p>
-                                        <p className="text-sm text-gray-600">Correct Answers</p>
-                                        <p className="text-xs text-gray-500">
-                                            out of {userPerformance.totalQuestions || 0}
-                                        </p>
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="text-2xl font-bold text-[#661fff]">
-                                            {userPerformance.averageTime}s
-                                        </p>
-                                        <p className="text-sm text-gray-600">Average Time</p>
-                                        <p className="text-xs text-gray-500">per question</p>
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="text-2xl font-bold text-[#661fff]">
-                                            {userPerformance.totalQuestions
-                                                ? (
-                                                        (userPerformance.correctAnswers /
-                                                            userPerformance.totalQuestions) *
-                                                        100
-                                                  ).toFixed(1)
-                                                : 0}%
-                                        </p>
-                                        <p className="text-sm text-gray-600">Accuracy Rate</p>
-                                        <p className="text-xs text-gray-500">overall performance</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+{themes && themes.length > 0 && (
+  <div className="bg-white rounded-lg shadow p-5 mb-4">
+    <h3 className="text-md font-bold text-gray-700 mb-3">Select Theme</h3>
+    <input
+      type="text"
+      placeholder="Search themes..."
+      value={themeSearch}
+      onChange={e => setThemeSearch(e.target.value)}
+      className="mb-4 w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#661fff]"
+    />
+    <div className="flex flex-wrap gap-2">
+      {themes
+        .filter(theme =>
+          theme.toLowerCase().includes(themeSearch.toLowerCase())
+        )
+        .slice(0, 10)
+        .map(theme => (
+          <button
+            key={theme}
+            className={`px-4 py-2 rounded-full border text-sm font-medium ${
+              selectedTheme === theme
+                ? "bg-[#661fff] text-white border-[#661fff]"
+                : "bg-gray-100 text-gray-700 border-gray-200"
+            }`}
+            onClick={() => handleThemeChange(theme)}
+          >
+            {theme.charAt(0).toUpperCase() + theme.slice(1)}
+          </button>
+        ))}
+      {themes.filter(theme =>
+        theme.toLowerCase().includes(themeSearch.toLowerCase())
+      ).length === 0 && (
+        <span className="text-gray-500 text-sm">No themes found.</span>
+      )}
+    </div>
+  </div>
+)}
+
+       {challengeType === "Theme Challenge" && (
+  <>
+    {/* Theme Selection - only for Theme Challenge */}
+    <div className="bg-white rounded-lg shadow p-5">
+      {/* ...theme selection UI... */}
+    </div>
+
+    {/* Performance Section - UPDATED to single column */}
+    <div className="grid grid-cols-1 gap-4">
+      {/* Your Performance */}
+      <div className="bg-white rounded-lg shadow p-5">
+        <h3 className="text-md font-bold text-gray-700 mb-2">
+          Your Performance in "{selectedTheme.charAt(0).toUpperCase() + selectedTheme.slice(1)}"
+        </h3>
+        {themePerformanceLoading ? (
+          <div className="text-gray-500">Loading...</div>
+        ) : themePerformance ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="text-center">
+              <p className="text-3xl font-bold text-[#661fff]">
+                {themePerformance.total_score
+                  ? themePerformance.total_score.split("/")[0]
+                  : 0}
+              </p>
+              <p className="text-sm text-gray-600">Correct Answers</p>
+              <span className="text-xs text-gray-400">
+                out of {themePerformance.total_score
+                  ? themePerformance.total_score.split("/")[1]
+                  : 0}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500">No performance data found.</p>
+        )}
+      </div>
+    </div>
+  </>
+)}
+<>
+  {/* Theme Selection - only for Theme Challenge */}
+  {challengeType === "Theme Challenge" && (
+    <div className="bg-white rounded-lg shadow p-5">
+      {/* Theme Selection Content */}
+    </div>
+  )}
+
+  {/* Performance Section - UPDATED to single column */}
+  <div className="grid grid-cols-1 gap-4">
+    {/* Your Performance - now takes full width */}
+    <div className="bg-white rounded-lg shadow p-5">
+      <h3 className="text-md font-bold text-gray-700 mb-2">
+        Your Performance in "{selectedTheme.charAt(0).toUpperCase() + selectedTheme.slice(1)}"
+      </h3>
+      {themePerformanceLoading ? (
+        <div className="text-gray-500">Loading...</div>
+      ) : themePerformance ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="text-center">
+            <p className="text-3xl font-bold text-[#661fff]">
+              {themePerformance.total_score
+                ? themePerformance.total_score.split("/")[0]
+                : 0}
+            </p>
+            <p className="text-sm text-gray-600">Correct Answers</p>
+            <span className="text-xs text-gray-400">
+              out of {themePerformance.total_score
+                ? themePerformance.total_score.split("/")[1]
+                : 0}
+            </span>
+          </div>
+
+          <div className="text-center">
+            <p className="text-3xl font-bold text-[#661fff]">
+              {themePerformance.avg_time_seconds !== undefined
+                ? `${themePerformance.avg_time_seconds}s`
+                : "0s"}
+            </p>
+            <p className="text-sm text-gray-600">Average Time</p>
+            <span className="text-xs text-gray-400">
+              per Quiz
+            </span>
+          </div>
+
+          <div className="text-center">
+            <p className="text-3xl font-bold text-[#661fff]">
+              {themePerformance.accuracy !== undefined
+                ? themePerformance.accuracy
+                : "0%"}
+            </p>
+            <p className="text-sm text-gray-600">Accuracy Rate</p>
+            <span className="text-xs text-gray-400">
+              overall performance
+            </span>
+          </div>
+        </div>
+      ) : (
+        <div className="text-gray-500">No performance data available for this theme.</div>
+      )}
+    </div>
+  </div>
+</>
+
 
                         {/* Leaderboards Section */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -713,40 +831,41 @@ export default function Challengemodel() {
                             </div>
                         </div>
 
+                 
                         {/* Quick Challenge Entry */}
-                        <div className="bg-white rounded-lg shadow p-5">
-                            <h3 className="text-md font-bold text-gray-700 mb-4">
-                                Quick Challenge Entry
-                            </h3>
+{/* 
+<div className="bg-white rounded-lg shadow p-5">
+    <h3 className="text-md font-bold text-gray-700 mb-4">
+        Quick Challenge Entry
+    </h3>
+    <label
+        htmlFor="challengeMode"
+        className="block font-medium mb-2 text-gray-700">
+        Enters challenge type or select from above
+    </label>
+    <input
+        id="challengeMode"
+        type="text"
+        value={challengeType}
+        onChange={e => setChallengeType(e.target.value)}
+        placeholder="e.g., Head-to-Head, Theme Challenge"
+        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#661fff] mb-4"
+    />
+    <div className="flex space-x-4">
+        <button
+            className="bg-[#661fff] text-white px-5 py-2 rounded-full hover:bg-[#7a48e8] focus:outline-none focus:ring-2 focus:ring-[#661fff]"
+            onClick={handleStartChallenge}>
+            Start Challenge
+        </button>
+        <button
+            className="bg-gray-300 text-gray-800 px-5 py-2 rounded-full hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+            onClick={() => setChallengeType("")}>
+            Clear
+        </button>
+    </div>
+</div>
+*/}
 
-                            <label
-                                htmlFor="challengeMode"
-                                className="block font-medium mb-2 text-gray-700">
-                                Enter challenge type or select from above
-                            </label>
-
-                            <input
-                                id="challengeMode"
-                                type="text"
-                                value={challengeType}
-                                onChange={e => setChallengeType(e.target.value)}
-                                placeholder="e.g., Head-to-Head, Theme Challenge"
-                                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#661fff] mb-4"
-                            />
-
-                            <div className="flex space-x-4">
-                                <button
-                                    className="bg-[#661fff] text-white px-5 py-2 rounded-full hover:bg-[#7a48e8] focus:outline-none focus:ring-2 focus:ring-[#661fff]"
-                                    onClick={handleStartChallenge}>
-                                    Start Challenge
-                                </button>
-                                <button
-                                    className="bg-gray-300 text-gray-800 px-5 py-2 rounded-full hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
-                                    onClick={() => setChallengeType("")}>
-                                    Clear
-                                </button>
-                            </div>
-                        </div>
                     </>
                 )}
             </div>

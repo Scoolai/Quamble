@@ -14,11 +14,10 @@ import { useState } from "react"
 import { useAuth } from "../context/AuthContext"
 
 const navigation = [
-	{ name: "Profile", href: "/dashboard" },
 	{ name: "Home", href: "/" },
 	{ name: "Quizzes", href: "/quiz" },
-	{ name: "About Us", href: "/aboutus" },
 	{ name: "AI Challenge", href: "/aichallenge" },
+	{ name: "About Us", href: "/aboutus" },
 ]
 
 function classNames(...classes) {
