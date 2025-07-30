@@ -13,6 +13,7 @@ import Challengemodel from "./components/Challengemodel"
 import Resultpage from "./components/Resultpage"
 import { AuthProvider } from "./context/AuthContext"
 import BeatTheAI from "./components/BeatTheAI"
+import PrivacyPolicy from "./components/PrivacyPolicy"
 
 function App() {
 	return (
@@ -41,6 +42,8 @@ function App() {
 						path="/aichallenge/result"
 						element={<Resultpage />}
 					/>
+					<Route path="/privacy-policy" element={<PrivacyPolicy />} />
+
 				</Routes>
 			</AuthProvider>
 			<Footer />

@@ -67,7 +67,19 @@ export const Footer = () => {
             © Copyright {currentYear} Quamble. All rights reserved.
           </p>
 
+ 
+ 
           <div className="flex items-center mt-4 space-x-4 sm:mt-0">
+             {/* Privacy Policy link */}
+  <a
+  href="/privacy-policy"
+  className="text-base font-semibold text-black bg-white px-5 py-2 rounded-md border border-gray-300 shadow hover:bg-gray-100 transition duration-300 ml-4"
+>
+  Privacy Policy
+</a>
+
+
+           
             <a
               href="https://www.linkedin.com/company/104816648/admin/page-posts/published/"
               className="transition-colors duration-300 text-deep-purple-100 hover:text-teal-accent-400"
@@ -97,6 +109,8 @@ export const Footer = () => {
                 c1.105,0,2-0.895,2-2V2C24,0.895,23.105,0,22,0z" />
               </svg>
             </a>
+
+          
           </div>
         </div>
       </div>
