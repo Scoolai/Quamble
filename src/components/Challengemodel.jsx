@@ -47,9 +47,9 @@ export default function Challengemodel() {
         },
         {
             id: "create-quiz",
-            title: "Create Your Own Quiz",
-            description: "Create your own questions and challenge others.",
-            apiEndpoint: "/create_quiz_master",
+            title: "Explore more",
+            description: "Go through theme based quizzes and challenges.",
+            apiEndpoint: "/quiz",
         },
     ]
 
@@ -505,7 +505,7 @@ export default function Challengemodel() {
         } else if (modeId === "head-to-head") {
             navigate("/aichallenge/beat-the-ai?challengeType=headtohead&theme=random");
         } else if (modeId === "create-quiz") {
-            navigate("/create-quiz");
+            navigate("/quiz");
         }
     };
 
@@ -545,326 +545,197 @@ export default function Challengemodel() {
                                 </div>
                             ))}
                         </div>
- 
-                        {/* Recent Themes Section */}
-                        <div className="bg-white rounded-lg shadow p-5 mb-4">
-                          <h3 className="text-md font-bold text-gray-700 mb-3">Recent Themes</h3>
-                          <div className="flex flex-wrap gap-2">
-                            {recentQuizzes && recentQuizzes.length > 0 ? (
-                              recentQuizzes
-                                .filter(quiz => quiz.theme) // Filter out quizzes without theme
-                                .slice(0, 4) // Take only the 4 most recent
-                                .map((quiz, idx) => (
-                                  <button
-                                    key={idx}
-                                    onClick={() => handleThemeChange(quiz.theme.toLowerCase())}
-                                    className="px-4 py-2 rounded-full bg-gray-100 text-gray-700 text-sm font-medium 
-                                             border border-gray-200 hover:bg-[#661fff] hover:text-white 
-                                             hover:border-[#661fff] transition-colors duration-200"
-                                  >
-                                    {quiz.theme.charAt(0).toUpperCase() + quiz.theme.slice(1)}
-                                  </button>
-                                ))
-                            ) : (
-                              <span className="text-gray-500 text-sm">No recent themes played yet.</span>
-                            )}
-                          </div>
-                        </div>
+ {/* Theme Challenge Overview Title */}
+<div className="mb-6">
+  <h2 className="text-3xl font-bold text-black">Theme Challenge Overview</h2>
+</div>
 
-{themes && themes.length > 0 && (
-  <div className="bg-white rounded-lg shadow p-5 mb-4">
-    <h3 className="text-md font-bold text-gray-700 mb-3">Select Theme</h3>
-    <input
-      type="text"
-      placeholder="Search themes..."
-      value={themeSearch}
-      onChange={e => setThemeSearch(e.target.value)}
-      className="mb-4 w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#661fff]"
-    />
-    <div className="flex flex-wrap gap-2">
-      {themes
-        .filter(theme =>
-          theme.toLowerCase().includes(themeSearch.toLowerCase())
-        )
-        .slice(0, 10)
-        .map(theme => (
-          <button
-            key={theme}
-            className={`px-4 py-2 rounded-full border text-sm font-medium ${
-              selectedTheme === theme
-                ? "bg-[#661fff] text-white border-[#661fff]"
-                : "bg-gray-100 text-gray-700 border-gray-200"
-            }`}
-            onClick={() => handleThemeChange(theme)}
-          >
-            {theme.charAt(0).toUpperCase() + theme.slice(1)}
-          </button>
-        ))}
-      {themes.filter(theme =>
-        theme.toLowerCase().includes(themeSearch.toLowerCase())
-      ).length === 0 && (
-        <span className="text-gray-500 text-sm">No themes found.</span>
-      )}
-    </div>
-  </div>
-)}
-
-       {challengeType === "Theme Challenge" && (
-  <>
-    {/* Theme Selection - only for Theme Challenge */}
-    <div className="bg-white rounded-lg shadow p-5">
-      {/* ...theme selection UI... */}
+                    
+{/* Combined Stats and Leaderboards Card */}
+<div className="bg-white rounded-xl shadow-lg p-6">
+    {/* Theme Selection Section */}
+    <div className="mb-8">
+        <h3 className="text-lg font-bold text-gray-800 mb-3">Select Theme</h3>
+        <input
+            type="text"
+            placeholder="Search themes..."
+            value={themeSearch}
+            onChange={e => setThemeSearch(e.target.value)}
+            className="mb-4 w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#661fff]"
+        />
+        <div className="flex flex-wrap gap-2">
+            {themes
+                .filter(theme => theme.toLowerCase().includes(themeSearch.toLowerCase()))
+                .slice(0, 10)
+                .map(theme => (
+                    <button
+                        key={theme}
+                        className={`px-4 py-2 rounded-full border text-sm font-medium ${
+                            selectedTheme === theme
+                                ? "bg-[#661fff] text-white border-[#661fff]"
+                                : "bg-gray-100 text-gray-700 border-gray-200"
+                        }`}
+                        onClick={() => handleThemeChange(theme)}
+                    >
+                        {theme.charAt(0).toUpperCase() + theme.slice(1)}
+                    </button>
+                ))}
+        </div>
     </div>
 
-    {/* Performance Section - UPDATED to single column */}
-    <div className="grid grid-cols-1 gap-4">
-      {/* Your Performance */}
-      <div className="bg-white rounded-lg shadow p-5">
-        <h3 className="text-md font-bold text-gray-700 mb-2">
-          Your Performance in "{selectedTheme.charAt(0).toUpperCase() + selectedTheme.slice(1)}"
+    {/* Divider */}
+    <div className="border-b border-gray-200 my-6"></div>
+
+    {/* Performance Stats Section */}
+    <div className="mb-8">
+        <h3 className="text-lg font-bold text-gray-800 mb-4">
+            Your Performance in "{selectedTheme.charAt(0).toUpperCase() + selectedTheme.slice(1)}"
         </h3>
         {themePerformanceLoading ? (
-          <div className="text-gray-500">Loading...</div>
+            <div className="text-gray-500">Loading performance data...</div>
         ) : themePerformance ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-[#661fff]">
-                {themePerformance.total_score
-                  ? themePerformance.total_score.split("/")[0]
-                  : 0}
-              </p>
-              <p className="text-sm text-gray-600">Correct Answers</p>
-              <span className="text-xs text-gray-400">
-                out of {themePerformance.total_score
-                  ? themePerformance.total_score.split("/")[1]
-                  : 0}
-              </span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-gray-50 rounded-lg p-4 text-center">
+                    <p className="text-3xl font-bold text-[#661fff]">
+                        {themePerformance.total_score ? themePerformance.total_score.split("/")[0] : 0}
+                    </p>
+                    <p className="text-sm text-gray-600">Correct Answers</p>
+                    <span className="text-xs text-gray-400">
+                        out of {themePerformance.total_score ? themePerformance.total_score.split("/")[1] : 0}
+                    </span>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4 text-center">
+                    <p className="text-3xl font-bold text-[#661fff]">
+                        {themePerformance.avg_time_seconds !== undefined ? `${themePerformance.avg_time_seconds}s` : "0s"}
+                    </p>
+                    <p className="text-sm text-gray-600">Average Time</p>
+                    <span className="text-xs text-gray-400">per Quiz</span>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4 text-center">
+                    <p className="text-3xl font-bold text-[#661fff]">
+                        {themePerformance.accuracy !== undefined ? themePerformance.accuracy : "0%"}
+                    </p>
+                    <p className="text-sm text-gray-600">Accuracy Rate</p>
+                    <span className="text-xs text-gray-400">overall performance</span>
+                </div>
             </div>
-          </div>
         ) : (
-          <p className="text-sm text-gray-500">No performance data found.</p>
+            <div className="text-gray-500">No performance data available for this theme.</div>
         )}
-      </div>
     </div>
-  </>
-)}
-<>
-  {/* Theme Selection - only for Theme Challenge */}
-  {challengeType === "Theme Challenge" && (
-    <div className="bg-white rounded-lg shadow p-5">
-      {/* Theme Selection Content */}
-    </div>
-  )}
 
-  {/* Performance Section - UPDATED to single column */}
-  <div className="grid grid-cols-1 gap-4">
-    {/* Your Performance - now takes full width */}
-    <div className="bg-white rounded-lg shadow p-5">
-      <h3 className="text-md font-bold text-gray-700 mb-2">
-        Your Performance in "{selectedTheme.charAt(0).toUpperCase() + selectedTheme.slice(1)}"
-      </h3>
-      {themePerformanceLoading ? (
-        <div className="text-gray-500">Loading...</div>
-      ) : themePerformance ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center">
-            <p className="text-3xl font-bold text-[#661fff]">
-              {themePerformance.total_score
-                ? themePerformance.total_score.split("/")[0]
-                : 0}
-            </p>
-            <p className="text-sm text-gray-600">Correct Answers</p>
-            <span className="text-xs text-gray-400">
-              out of {themePerformance.total_score
-                ? themePerformance.total_score.split("/")[1]
-                : 0}
-            </span>
-          </div>
+    {/* Divider */}
+    <div className="border-b border-gray-200 my-6"></div>
 
-          <div className="text-center">
-            <p className="text-3xl font-bold text-[#661fff]">
-              {themePerformance.avg_time_seconds !== undefined
-                ? `${themePerformance.avg_time_seconds}s`
-                : "0s"}
-            </p>
-            <p className="text-sm text-gray-600">Average Time</p>
-            <span className="text-xs text-gray-400">
-              per Quiz
-            </span>
-          </div>
-
-          <div className="text-center">
-            <p className="text-3xl font-bold text-[#661fff]">
-              {themePerformance.accuracy !== undefined
-                ? themePerformance.accuracy
-                : "0%"}
-            </p>
-            <p className="text-sm text-gray-600">Accuracy Rate</p>
-            <span className="text-xs text-gray-400">
-              overall performance
-            </span>
-          </div>
+    {/* Leaderboards Section */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Theme-specific Leaderboard */}
+        <div>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">
+                Top Performers in {selectedTheme.charAt(0).toUpperCase() + selectedTheme.slice(1)}
+            </h3>
+            {themeLeaderboard.length > 0 ? (
+                <div className="overflow-x-auto">
+                    <table className="min-w-full">
+                        <thead>
+                            <tr className="border-b border-gray-200">
+                                <th className="text-left py-2 px-3 text-sm font-medium text-gray-600">
+                                    Rank
+                                </th>
+                                <th className="text-left py-2 px-3 text-sm font-medium text-gray-600">
+                                    Username
+                                </th>
+                                <th className="text-right py-2 px-3 text-sm font-medium text-gray-600">
+                                    Score
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {themeLeaderboard.map(
+                                (entry, index) => (
+                                    <tr
+                                        key={index}
+                                        className="border-b border-gray-100">
+                                        <td className="py-2 px-3 text-sm text-gray-800">
+                                            {index + 1}
+                                        </td>
+                                        <td className="py-2 px-3 text-sm text-gray-800">
+                                            {entry.username}
+                                        </td>
+                                        <td className="py-2 px-3 text-sm text-gray-800 text-right">
+                                            {entry.total_score}
+                                        </td>
+                                    </tr>
+                                )
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            ) : (
+                <p className="text-gray-500">No leaderboard data available for this theme.</p>
+            )}
         </div>
-      ) : (
-        <div className="text-gray-500">No performance data available for this theme.</div>
-      )}
-    </div>
-  </div>
-</>
 
-
-                        {/* Leaderboards Section */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Theme-specific Leaderboard */}
-                            <div className="bg-white rounded-lg shadow p-5">
-                                <h3 className="text-md font-bold text-gray-700 mb-3">
-                                    Top Performers in{" "}
-                                    {selectedTheme.charAt(0).toUpperCase() +
-                                        selectedTheme.slice(1)}
-                                </h3>
-
-                                {themeLeaderboard.length > 0 ? (
-                                    <div className="overflow-x-auto">
-                                        <table className="min-w-full">
-                                            <thead>
-                                                <tr className="border-b border-gray-200">
-                                                    <th className="text-left py-2 px-3 text-sm font-medium text-gray-600">
-                                                        Rank
-                                                    </th>
-                                                    <th className="text-left py-2 px-3 text-sm font-medium text-gray-600">
-                                                        Username
-                                                    </th>
-                                                    <th className="text-right py-2 px-3 text-sm font-medium text-gray-600">
-                                                        Score
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {themeLeaderboard.map(
-                                                    (entry, index) => (
-                                                        <tr
-                                                            key={index}
-                                                            className="border-b border-gray-100">
-                                                            <td className="py-2 px-3 text-sm text-gray-800">
-                                                                {index + 1}
-                                                            </td>
-                                                            <td className="py-2 px-3 text-sm text-gray-800">
-                                                                {entry.username}
-                                                            </td>
-                                                            <td className="py-2 px-3 text-sm text-gray-800 text-right">
-                                                                {entry.total_score}
-                                                            </td>
-                                                        </tr>
-                                                    )
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                ) : (
-                                    <p className="text-gray-500 text-sm">
-                                        No leaderboard data available for this theme.
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Overall Leaderboard */}
-                            <div className="bg-white rounded-lg shadow p-5">
-                                <div className="flex items-center justify-between mb-3">
-                                    <h3 className="text-md font-bold text-gray-700">
-                                        Overall Top Performers
-                                    </h3>
-                                    <button
-                                        onClick={fetchOverallLeaderboard}
-                                        disabled={overallLeaderboardLoading}
-                                        className="text-xs text-blue-600 hover:text-blue-800 disabled:text-gray-400">
-                                        {overallLeaderboardLoading ? "Loading..." : "🔄 Refresh"}
-                                    </button>
-                                </div>
-
-                                {overallLeaderboardLoading ? (
-                                    <div className="flex items-center justify-center p-4">
-                                        <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-[#661fff] mr-2"></div>
-                                        <span className="text-gray-600">Loading overall leaderboard...</span>
-                                    </div>
-                                ) : overallLeaderboard.length > 0 ? (
-                                    <div className="overflow-x-auto">
-                                        <table className="min-w-full">
-                                            <thead>
-                                                <tr className="border-b border-gray-200">
-                                                    <th className="text-left py-2 px-3 text-sm font-medium text-gray-600">
-                                                        Rank
-                                                    </th>
-                                                    <th className="text-left py-2 px-3 text-sm font-medium text-gray-600">
-                                                        Username
-                                                    </th>
-                                                    <th className="text-right py-2 px-3 text-sm font-medium text-gray-600">
-                                                        Score
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {overallLeaderboard.map(
-                                                    (entry, index) => (
-                                                        <tr
-                                                            key={index}
-                                                            className="border-b border-gray-100">
-                                                            <td className="py-2 px-3 text-sm text-gray-800">
-                                                                {index + 1}
-                                                            </td>
-                                                            <td className="py-2 px-3 text-sm text-gray-800">
-                                                                {entry.username || entry.name || 'Unknown'}
-                                                            </td>
-                                                            <td className="py-2 px-3 text-sm text-gray-800 text-right">
-                                                                {entry.total_score || entry.score || 0}
-                                                            </td>
-                                                        </tr>
-                                                    )
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                ) : (
-                                    <p className="text-gray-500 text-sm">
-                                        No overall leaderboard data available.
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-
-                 
-                        {/* Quick Challenge Entry */}
-{/* 
-<div className="bg-white rounded-lg shadow p-5">
-    <h3 className="text-md font-bold text-gray-700 mb-4">
-        Quick Challenge Entry
-    </h3>
-    <label
-        htmlFor="challengeMode"
-        className="block font-medium mb-2 text-gray-700">
-        Enters challenge type or select from above
-    </label>
-    <input
-        id="challengeMode"
-        type="text"
-        value={challengeType}
-        onChange={e => setChallengeType(e.target.value)}
-        placeholder="e.g., Head-to-Head, Theme Challenge"
-        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#661fff] mb-4"
-    />
-    <div className="flex space-x-4">
-        <button
-            className="bg-[#661fff] text-white px-5 py-2 rounded-full hover:bg-[#7a48e8] focus:outline-none focus:ring-2 focus:ring-[#661fff]"
-            onClick={handleStartChallenge}>
-            Start Challenge
-        </button>
-        <button
-            className="bg-gray-300 text-gray-800 px-5 py-2 rounded-full hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
-            onClick={() => setChallengeType("")}>
-            Clear
-        </button>
+        {/* Overall Leaderboard */}
+        <div>
+            <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-800">Overall Top Performers</h3>
+                <button
+                    onClick={fetchOverallLeaderboard}
+                    disabled={overallLeaderboardLoading}
+                    className="text-sm text-blue-600 hover:text-blue-800 disabled:text-gray-400"
+                >
+                    {overallLeaderboardLoading ? "Loading..." : "🔄 Refresh"}
+                </button>
+            </div>
+            {overallLeaderboardLoading ? (
+                <div className="flex items-center justify-center p-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-[#661fff] mr-2"></div>
+                    <span className="text-gray-600">Loading overall leaderboard...</span>
+                </div>
+            ) : overallLeaderboard.length > 0 ? (
+                <div className="overflow-x-auto">
+                    <table className="min-w-full">
+                        <thead>
+                            <tr className="border-b border-gray-200">
+                                <th className="text-left py-2 px-3 text-sm font-medium text-gray-600">
+                                    Rank
+                                </th>
+                                <th className="text-left py-2 px-3 text-sm font-medium text-gray-600">
+                                    Username
+                                </th>
+                                <th className="text-right py-2 px-3 text-sm font-medium text-gray-600">
+                                    Score
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {overallLeaderboard.map(
+                                (entry, index) => (
+                                    <tr
+                                        key={index}
+                                        className="border-b border-gray-100">
+                                        <td className="py-2 px-3 text-sm text-gray-800">
+                                            {index + 1}
+                                        </td>
+                                        <td className="py-2 px-3 text-sm text-gray-800">
+                                            {entry.username || entry.name || 'Unknown'}
+                                        </td>
+                                        <td className="py-2 px-3 text-sm text-gray-800 text-right">
+                                            {entry.total_score || entry.score || 0}
+                                        </td>
+                                    </tr>
+                                )
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            ) : (
+                <p className="text-gray-500">No overall leaderboard data available.</p>
+            )}
+        </div>
     </div>
 </div>
-*/}
 
                     </>
                 )}
