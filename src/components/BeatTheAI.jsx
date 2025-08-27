@@ -52,7 +52,8 @@ const BeatTheAI = () => {
     })
     const [selectedTheme, setSelectedTheme] = useState(themeFromUrl || "");
     const [inputTheme, setInputTheme] = useState(""); // New state for input theme
-    // New state for challenge type
+    const [userSelectedOption, setUserSelectedOption] = useState(null);
+    const [showFeedback, setShowFeedback] = useState(false);
 
     // Check authentication
     useEffect(() => {
@@ -90,6 +91,21 @@ const BeatTheAI = () => {
       await fetchNextQuestion(themeToUse);
     }
 
+    // Start new game with custom theme
+    const startGameWithTheme = async (theme) => {
+        const themeToUse = theme || "random topics";
+        setGameState(prev => ({
+            ...prev,
+            isPlaying: true,
+            score: 0,
+            questionCount: 0,
+            gameOver: false,
+            error: null,
+            theme: themeToUse,
+        }));
+        await fetchNextQuestion(themeToUse);
+    }
+
     // Fetch next question from API
     const fetchNextQuestion = async (themeOverride) => {
         if (!isAuthenticated()) return
@@ -100,9 +116,9 @@ const BeatTheAI = () => {
             const token = getAuthToken()
             const formData = new FormData()
             
-            // Use themeOverride if provided, otherwise use gameState.theme
             const themeToSend = themeOverride || gameState.theme || "random facts about animals"
             formData.append("theme", themeToSend)
+            // Score is already in 0-100 scale
             formData.append("score", gameState.score.toString())
 
             console.log("Fetching next question...")
@@ -168,6 +184,9 @@ const BeatTheAI = () => {
 
     // Handle answer selection
     const handleAnswer = async (selectedOption) => {
+        setUserSelectedOption(selectedOption);
+        setShowFeedback(true);
+
         const isCorrect =
             gameState.currentQuestion &&
             selectedOption === gameState.currentQuestion.correctOption;
@@ -175,24 +194,28 @@ const BeatTheAI = () => {
         if (isCorrect) {
             setGameState(prev => ({
                 ...prev,
-                score: prev.score + 1
+                score: prev.score + 10 // Each correct answer is 10 marks
             }))
         }
 
-        // Check if game should continue (let's say max 10 questions)
+        // Don't fetch next question yet; wait for Next button
         if (gameState.questionCount >= 10) {
-            setGameState(prev => ({
-                ...prev,
-                gameOver: true,
-                isPlaying: false
-            }))
-        } else {
-            // Fetch next question with updated score
             setTimeout(() => {
-                fetchNextQuestion()
-            }, 1000)
+                setGameState(prev => ({
+                    ...prev,
+                    gameOver: true,
+                    isPlaying: false
+                }))
+            }, 1000);
         }
-    }
+    };
+
+    // Next question handler
+    const handleNextQuestion = () => {
+        setUserSelectedOption(null);
+        setShowFeedback(false);
+        fetchNextQuestion();
+    };
 
     // Reset game
     const resetGame = () => {
@@ -220,27 +243,20 @@ const BeatTheAI = () => {
                             <label className="block text-white text-lg font-semibold mb-2">
                                 Enter Theme
                             </label>
-                            <div className="flex">
-                                <input
-                                    type="text"
-                                    className="flex-1 p-3 rounded-l-lg bg-white text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-400 border border-gray-300 shadow"
-                                    placeholder="Type your theme..."
-                                    value={inputTheme}
-                                    onChange={e => setInputTheme(e.target.value)}
-                                />
-                                <button
-                                    type="button"
-                                    className="px-4 rounded-r-lg bg-blue-600 text-white font-semibold hover:bg-blue-500 transition"
-                                    onClick={() => setSelectedTheme(inputTheme)}
-                                    disabled={!inputTheme.trim()}
-                                >
-                                    OK
-                                </button>
-                            </div>
+                            <input
+                                type="text"
+                                className="w-full p-3 rounded-lg bg-white text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-400 border border-gray-300 shadow"
+                                placeholder="Type your theme..."
+                                value={inputTheme}
+                                onChange={e => setInputTheme(e.target.value)}
+                            />
                         </div>
                         <div
-                            onClick={startGame}
-                            className="relative cursor-pointer flex flex-col justify-between min-h-32 w-80 rounded-tr-3xl rounded-bl-3xl hover:scale-105 transition-all ease-in-out duration-500 hover:shadow-2xl hover:shadow-black hover:rounded-tl-3xl hover:rounded-br-3xl bg-gradient-to-r from-red-600 to-purple-600">
+                            onClick={() => {
+                                setSelectedTheme(inputTheme);
+                                startGameWithTheme(inputTheme);
+                            }}
+                            className={`relative cursor-pointer flex flex-col justify-between min-h-32 w-80 rounded-tr-3xl rounded-bl-3xl hover:scale-105 transition-all ease-in-out duration-500 hover:shadow-2xl hover:shadow-black hover:rounded-tl-3xl hover:rounded-br-3xl bg-gradient-to-r from-red-600 to-purple-600 ${!inputTheme.trim() ? "opacity-50 pointer-events-none" : ""}`}>
                             <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent rounded-tr-3xl rounded-bl-3xl hover:rounded-tl-3xl transition-all ease-out duration-500" />
                             <div className="relative block px-6 py-4 text-center">
                                 <h3 className="text-2xl font-bold text-white mb-2">
@@ -285,33 +301,27 @@ const BeatTheAI = () => {
 
     // Show game over screen
     if (gameState.gameOver) {
+        const didBeatAI = gameState.score >= 80;
         return (
             <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
                 <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
-                    <h2 className="text-3xl font-bold text-gray-800 mb-4">
-                        Game Over! 🎉
-                    </h2>
-                    <p className="text-xl text-gray-600 mb-2">
-                        Final Score: {gameState.score}/{gameState.questionCount}
+                    <h1 className={`text-3xl font-bold mb-4 ${didBeatAI ? "text-green-600" : "text-red-600"}`}>
+                        {didBeatAI
+                            ? "🎉 Congratulations! You Beat the AI!"
+                            : "😢 Ohh no!! Better luck next time"}
+                    </h1>
+                    <p className="text-lg text-gray-700 mb-6">
+                        You scored {gameState.score} out of 100.
                     </p>
-                    <p className="text-lg text-gray-500 mb-6">
-                        Difficulty Reached: {gameState.difficulty}
-                    </p>
-                    <div className="space-y-4">
-                        <button
-                            onClick={startGame}
-                            className="w-full bg-gradient-to-r from-red-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-red-700 hover:to-purple-700 transition-all">
-                            Play Again
-                        </button>
-                        <Link
-                            to="/"
-                            className="block w-full bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-all">
-                            Back to Home
-                        </Link>
-                    </div>
+                    <button
+                        onClick={resetGame}
+                        className="bg-[#661fff] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#4b1bbd] transition-all"
+                    >
+                        Play Again
+                    </button>
                 </div>
             </div>
-        )
+        );
     }
 
     // Show loading state
@@ -370,7 +380,7 @@ const BeatTheAI = () => {
                     </h1>
                     <div className="flex justify-between items-center text-sm text-gray-600">
                         <span>Question {gameState.questionCount}/10</span>
-                        <span>Score: {gameState.score}</span>
+                        <span>Score: {gameState.score} / 100</span>
                         <span>Difficulty: {gameState.difficulty}</span>
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
@@ -387,20 +397,49 @@ const BeatTheAI = () => {
 
                         {/* Options */}
                         <div className="space-y-4">
-                            {Object.entries(gameState.currentQuestion.options).map(([key, value]) => (
-                                <button
-                                    key={key}
-                                    onClick={() => handleAnswer(key)}
-                                    className="w-full text-left p-4 bg-gray-50 hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-300 rounded-lg transition-all">
-                                    <span className="font-semibold text-blue-600 mr-3">
-                                        {key}:
-                                    </span>
-                                    <span className="text-gray-800">{value}</span>
-                                </button>
-                            ))}
+                            {Object.entries(gameState.currentQuestion.options).map(([key, value]) => {
+                                let optionStyle = "bg-gray-50 hover:bg-blue-50 border-gray-200 hover:border-blue-300";
+                                if (showFeedback) {
+                                    if (key === gameState.currentQuestion.correctOption) {
+                                        optionStyle = "bg-green-100 border-green-400 text-green-700 font-bold";
+                                    } else if (key === userSelectedOption) {
+                                        optionStyle = "bg-red-100 border-red-400 text-red-700 font-bold";
+                                    } else {
+                                        optionStyle = "bg-gray-50 border-gray-200 text-gray-800";
+                                    }
+                                } else if (userSelectedOption === key) {
+                                    optionStyle = "bg-blue-100 border-blue-400";
+                                }
+                                return (
+                                    <button
+                                        key={key}
+                                        disabled={showFeedback}
+                                        onClick={() => {
+                                            if (!showFeedback) handleAnswer(key);
+                                        }}
+                                        className={`w-full text-left p-4 border-2 rounded-lg transition-all ${optionStyle}`}
+                                    >
+                                        <span className="font-semibold text-blue-600 mr-3">
+                                            {key}:
+                                        </span>
+                                        <span className="text-gray-800">{value}</span>
+                                    </button>
+                                );
+                            })}
                         </div>
+                        {/* Next Button */}
+                        {showFeedback && (
+                            <div className="text-center mt-8">
+                                <button
+                                    onClick={handleNextQuestion}
+                                    className="px-6 py-2 rounded-lg font-semibold bg-green-600 text-white hover:bg-green-700 transition-all"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        )}
                         {/* Quit Button */}
-                        <div className="text-center mt-8">
+                        <div className="text-center mt-4">
                             <button
                                 onClick={resetGame}
                                 className="bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition-all">
@@ -409,7 +448,6 @@ const BeatTheAI = () => {
                         </div>
                     </div>
                 )}
-
                 {/* Challenge Type Selection - New Section */}
                 {challengeType === "Theme Challenge" && (
                   <div className="bg-white rounded-lg shadow p-5 mb-4">
