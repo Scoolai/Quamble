@@ -54,6 +54,8 @@ const BeatTheAI = () => {
     const [inputTheme, setInputTheme] = useState(""); // New state for input theme
     const [userSelectedOption, setUserSelectedOption] = useState(null);
     const [showFeedback, setShowFeedback] = useState(false);
+    const [didQuit, setDidQuit] = useState(false); // <-- Added state for quit
+    const [quitConfirmed, setQuitConfirmed] = useState(false);
 
     // Check authentication
     useEffect(() => {
@@ -230,6 +232,7 @@ const BeatTheAI = () => {
             gameOver: false,
             error: null
         })
+        setDidQuit(false); // Reset quit state
     }
 
     // If not playing, show the start card with theme selection
@@ -299,6 +302,85 @@ const BeatTheAI = () => {
         );
     }
 
+    // Show error state
+    if (gameState.error) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
+                    <h2 className="text-2xl font-bold text-red-600 mb-4">
+                        Error 😞
+                    </h2>
+                    <p className="text-gray-600 mb-6">
+                        {gameState.error}
+                    </p>
+                    <div className="space-y-4">
+                        <button
+                            onClick={fetchNextQuestion}
+                            className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-all">
+                            Try Again
+                        </button>
+                        <button
+                            onClick={resetGame}
+                            className="w-full bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-all">
+                            Back to Start
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    // Update the quit confirmation dialog:
+    if (didQuit && !quitConfirmed) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                        Are you sure you want to quit?
+                    </h2>
+                    <div className="flex gap-4">
+                        <button
+                            onClick={() => setQuitConfirmed(true)}
+                            className="flex-1 bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-600 transition-all">
+                            Yes, Quit
+                        </button>
+                        <button
+                            onClick={() => setDidQuit(false)}
+                            className="flex-1 bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-all">
+                            No, Continue
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Show the "Ohh no! Better luck next time" dialog after quit is confirmed
+    if (quitConfirmed) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
+                    <h1 className="text-3xl font-bold text-red-600 mb-4">
+                        Ohh no! Better luck next time
+                    </h1>
+                    <p className="text-lg text-gray-700 mb-6">
+                        Your score: {gameState.score} / 100
+                    </p>
+                    <button
+                        onClick={() => {
+                            setDidQuit(false);
+                            setQuitConfirmed(false);
+                            resetGame();
+                        }}
+                        className="bg-[#661fff] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#4b1bbd] transition-all"
+                    >
+                        Back to Start
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     // Show game over screen
     if (gameState.gameOver) {
         const didBeatAI = gameState.score >= 80;
@@ -336,34 +418,6 @@ const BeatTheAI = () => {
                     <p className="text-sm text-gray-500 mt-2">
                         Difficulty: {gameState.difficulty}
                     </p>
-                </div>
-            </div>
-        )
-    }
-
-    // Show error state
-    if (gameState.error) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
-                <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
-                    <h2 className="text-2xl font-bold text-red-600 mb-4">
-                        Error 😞
-                    </h2>
-                    <p className="text-gray-600 mb-6">
-                        {gameState.error}
-                    </p>
-                    <div className="space-y-4">
-                        <button
-                            onClick={fetchNextQuestion}
-                            className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-all">
-                            Try Again
-                        </button>
-                        <button
-                            onClick={resetGame}
-                            className="w-full bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-all">
-                            Back to Start
-                        </button>
-                    </div>
                 </div>
             </div>
         )
@@ -441,7 +495,7 @@ const BeatTheAI = () => {
                         {/* Quit Button */}
                         <div className="text-center mt-4">
                             <button
-                                onClick={resetGame}
+                                onClick={() => setDidQuit(true)}
                                 className="bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition-all">
                                 Quit Game
                             </button>
